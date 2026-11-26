@@ -52,8 +52,13 @@ Then open <http://localhost:8080> and log in with the password.
 - `DEEPSEEK_API_KEY` (or `ANTHROPIC_API_KEY`) – LLM API key. Alternatively mount `claude.key` /
   `deepseek.key` into the data directory of `yt-digest`. Without any key `yt-digest` falls back to
   Ollama, which must then be reachable from the container.
-- The volume is optional; it keeps the summaries and `processed_videos.json` between runs. The
-  data path is the app data directory of the user running the container (root by default).
+- The `-v` volume is **optional**. Without it everything works, but `yt-digest` stores its data
+  (summaries, `processed_videos.json`, key files) in the container's writable layer. That data
+  survives `docker stop`/`docker start`, but is lost with `docker rm` (e.g. when updating to a
+  new image). Use the volume if you want to keep it or provide `claude.key` / `deepseek.key` as
+  files. For plain single-video summaries in the browser you can omit it.
+- The data path is the app data directory of the user running the container. The Dockerfile sets
+  no `USER`, so this is root and the path is `/root/.local/share/yt-digest`.
 
 The app uses plain HTTP, so put it behind a TLS reverse proxy before exposing it beyond a trusted
 network.
